@@ -11,7 +11,7 @@ const int iters           = 100;
 const int times_of_average = 10;
 
 //第一種Reduction
-__global__ void kernel1(float* arr, float* out, int N){
+__global__ void kernel1(double* arr, double* out, int N){
     __shared__ float s_data[threadsPerBlock];
     //每個線程讀取一個元素
     unsigned int tid = threadIdx.x;
@@ -34,17 +34,17 @@ __global__ void kernel1(float* arr, float* out, int N){
 }
 
 int main(){
-    float* a_host, *r_host;
-    float* a_device, *r_device;
+    double* a_host, *r_host;
+    double* a_device, *r_device;
     float total_time = 0.0;
 
     for(int j=0; j<times_of_average; j++){
         //主機內存分配
-        cudaMallocHost(&a_host, N * sizeof(float));
-        cudaMallocHost(&r_host, blocksPerGrid * sizeof(float));
+        cudaMallocHost(&a_host, N * sizeof(double));
+        cudaMallocHost(&r_host, blocksPerGrid * sizeof(double));
         //顯卡內存分配
-        cudaMalloc(&a_device, N * sizeof(float));
-        cudaMalloc(&r_device, blocksPerGrid * sizeof(float));
+        cudaMalloc(&a_device, N * sizeof(double));
+        cudaMalloc(&r_device, blocksPerGrid * sizeof(double));
         //題目生成
         for(int i=0;i<N;i++){
             a_host[i] = 1;
@@ -52,15 +52,14 @@ int main(){
         for(int i=0;i<blocksPerGrid;i++){
             r_host[i] = 0.0;
         }
-        cout << "r_host =" << sizeof(r_host[0]) <<" a_host ="<< a_host << endl;
         //定義顯卡流
         cudaStream_t stream;
         //創建流
         cudaStreamCreate(&stream);
 
         //記憶體設定(異步)
-        cudaMemcpyAsync(a_device, a_host, N * sizeof(float), cudaMemcpyHostToDevice, stream);
-        cudaMemcpyAsync(r_device, r_host, blocksPerGrid * sizeof(float), cudaMemcpyHostToDevice, stream);
+        cudaMemcpyAsync(a_device, a_host, N * sizeof(double), cudaMemcpyHostToDevice, stream);
+        cudaMemcpyAsync(r_device, r_host, blocksPerGrid * sizeof(double), cudaMemcpyHostToDevice, stream);
 
         //定義與創建開始和停止事件(Event)
         cudaEvent_t start, stop;
@@ -85,9 +84,8 @@ int main(){
         cudaEventDestroy(start);
         cudaEventDestroy(stop);
         //主機與設備間記憶體複製
-        cudaMemcpy(r_host, r_device, blocksPerGrid * sizeof(float), cudaMemcpyDeviceToHost);
+        cudaMemcpy(r_host, r_device, blocksPerGrid * sizeof(double), cudaMemcpyDeviceToHost);
         //varifyOutput(r_host, a_host, N);
-        cout << "r_host =" << r_host <<" a_host ="<< a_host << endl;
         //釋放記憶體
         cudaFree(r_device);
         cudaFree(a_device);

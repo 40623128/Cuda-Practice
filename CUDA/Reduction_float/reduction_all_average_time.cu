@@ -4,7 +4,7 @@ using namespace std;
 //經測試於RTX3070最佳值為128，接著為256。
 const int threadsPerBlock = 128;
 //相加之元素個數(2^30-3)
-const int N               = (1 <<22);
+const int N               = (1 <<28);
 const int blocksPerGrid   = (N + threadsPerBlock - 1)/threadsPerBlock;
 const int iters           = 100;
 //計算平均時間之執行次數
