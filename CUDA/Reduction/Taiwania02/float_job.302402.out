@@ -1,0 +1,84 @@
+GPU Elapse time 0 : 5.14213 ms
+GPU Elapse time 1 : 5.01354 ms
+GPU Elapse time 2 : 5.01364 ms
+GPU Elapse time 3 : 5.01359 ms
+GPU Elapse time 4 : 5.01364 ms
+GPU Elapse time 5 : 5.01392 ms
+GPU Elapse time 6 : 5.0134 ms
+GPU Elapse time 7 : 5.01338 ms
+GPU Elapse time 8 : 5.01387 ms
+GPU Elapse time 9 : 5.01348 ms
+The Kernal1 times:
+GPU Elapse average time for 10 times:5.02646 ms
+GPU Elapse time 0 : 3.26283 ms
+GPU Elapse time 1 : 3.26265 ms
+GPU Elapse time 2 : 3.26254 ms
+GPU Elapse time 3 : 3.26312 ms
+GPU Elapse time 4 : 3.26292 ms
+GPU Elapse time 5 : 3.26272 ms
+GPU Elapse time 6 : 3.26236 ms
+GPU Elapse time 7 : 3.26273 ms
+GPU Elapse time 8 : 3.26278 ms
+GPU Elapse time 9 : 3.2625 ms
+The Kernal2 times:
+GPU Elapse average time for 10 times:3.26271 ms
+GPU Elapse time 0 : 2.96346 ms
+GPU Elapse time 1 : 2.96345 ms
+GPU Elapse time 2 : 2.9634 ms
+GPU Elapse time 3 : 2.96337 ms
+GPU Elapse time 4 : 2.96344 ms
+GPU Elapse time 5 : 2.96337 ms
+GPU Elapse time 6 : 2.96336 ms
+GPU Elapse time 7 : 2.96336 ms
+GPU Elapse time 8 : 2.96329 ms
+GPU Elapse time 9 : 2.96331 ms
+The Kernal3 times:
+GPU Elapse average time for 10 times:2.96338 ms
+GPU Elapse time 0 : 2.98423 ms
+GPU Elapse time 1 : 2.98426 ms
+GPU Elapse time 2 : 2.98416 ms
+GPU Elapse time 3 : 2.98425 ms
+GPU Elapse time 4 : 2.98419 ms
+GPU Elapse time 5 : 2.9842 ms
+GPU Elapse time 6 : 2.98418 ms
+GPU Elapse time 7 : 2.98434 ms
+GPU Elapse time 8 : 2.98425 ms
+GPU Elapse time 9 : 2.98425 ms
+The Kernal4 times:
+GPU Elapse average time for 10 times:2.98423 ms
+GPU Elapse time 0 : 2.96678 ms
+GPU Elapse time 1 : 2.96671 ms
+GPU Elapse time 2 : 2.96675 ms
+GPU Elapse time 3 : 2.96673 ms
+GPU Elapse time 4 : 2.96675 ms
+GPU Elapse time 5 : 2.96676 ms
+GPU Elapse time 6 : 2.96676 ms
+GPU Elapse time 7 : 2.96677 ms
+GPU Elapse time 8 : 2.9667 ms
+GPU Elapse time 9 : 2.96674 ms
+The Kernal5 times:
+GPU Elapse average time for 10 times:2.96675 ms
+GPU Elapse time 0 : 2.9664 ms
+GPU Elapse time 1 : 2.96641 ms
+GPU Elapse time 2 : 2.96637 ms
+GPU Elapse time 3 : 2.96643 ms
+GPU Elapse time 4 : 2.96634 ms
+GPU Elapse time 5 : 2.96638 ms
+GPU Elapse time 6 : 2.96629 ms
+GPU Elapse time 7 : 2.96638 ms
+GPU Elapse time 8 : 2.96638 ms
+GPU Elapse time 9 : 2.96629 ms
+The Kernal6 times:
+GPU Elapse average time for 10 times:2.96637 ms
+GPU Elapse time 0 : 2.96639 ms
+GPU Elapse time 1 : 2.96648 ms
+GPU Elapse time 2 : 2.96642 ms
+GPU Elapse time 3 : 2.96642 ms
+GPU Elapse time 4 : 2.96642 ms
+GPU Elapse time 5 : 2.96681 ms
+GPU Elapse time 6 : 2.96645 ms
+GPU Elapse time 7 : 2.96647 ms
+GPU Elapse time 8 : 2.96649 ms
+GPU Elapse time 9 : 2.9664 ms
+The Kernal7 times:
+GPU Elapse average time for 10 times:2.96647 ms
