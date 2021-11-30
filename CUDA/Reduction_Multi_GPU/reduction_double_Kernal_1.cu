@@ -2,11 +2,11 @@
 #include<time.h>
 using namespace std;
 
-//const int num_GPUs = 2;
+const int num_gpus = 2;
 //經測試於RTX3070最佳值為128，接著為256。
 const int threadsPerBlock = 128;
 //相加之元素個數(2^30-3)
-const int N               = (1 <<28);
+const int N               = (1 <<28 );
 const int blocksPerGrid   = (N + threadsPerBlock - 1)/threadsPerBlock;
 const int iters           = 100;
 //const int kernal_number = 7;
@@ -34,79 +34,127 @@ __global__ void kernel1(double* arr, double* out, int N){
 }
 
 int main(){
-    double* a_A_host, *r_A_host,*a_B_host,*r_B_host;
-    double* a_A_device, *r_A_device, *a_B_device, *r_B_device;
-    float total_time = 0.0;
-    //主機內存分配
-    cudaMallocHost(&a_A_host, N * sizeof(double));
-    cudaMallocHost(&a_B_host, N * sizeof(double));
-    cudaMallocHost(&r_A_host, blocksPerGrid * sizeof(double));
-    cudaMallocHost(&r_B_host, blocksPerGrid * sizeof(double));
-    //顯卡內存分配
-    cudaMalloc(&a_A_device, N * sizeof(double));
-    cudaMalloc(&r_A_device, blocksPerGrid * sizeof(double));
-    cudaMalloc(&a_B_device, N * sizeof(double));
-    cudaMalloc(&r_B_device, blocksPerGrid * sizeof(double));
+    float total_time[num_gpus];
+    double* a_host[num_gpus], *r_host[num_gpus];
+    double* a_device[num_gpus], *r_device[num_gpus];
+
+    for(int i = 0; i < num_gpus; i++){
+        //主機內存分配
+        cudaMallocHost(&a_host[i], N * sizeof(double));
+        cudaMallocHost(&r_host[i], blocksPerGrid * sizeof(double));
+        //顯卡內存分配
+        cudaMalloc(&a_device[i], N * sizeof(double));
+        cudaMalloc(&r_device[i], blocksPerGrid * sizeof(double));
+        cout << i << endl;
+    }
+    cout << "內存分配完成" << endl;
+
+
     //題目生成
-    for(int i=0;i<N/2;i++){
-        a_A_host[i] = 1;
-        a_B_host[i] = 1;
+    for(int i = 0; i < num_gpus; i++){
+        cout << "題目開始生成" << endl;
+        for(int j=0;j<N;j++){
+            a_host[i][j] = 1.0;
+            //cout <<"i =" <<i<< "; j =" <<j<< endl;
+        }
+        cout << "a_host生成完成" << endl;
+        for(int j=0;j<blocksPerGrid;j++){
+            r_host[i][j] = 0.0;
+            //cout <<"i =" <<i<< "; j =" <<j<< endl;
+        }
+        cout << "r_host生成完成" << endl;
     }
-    for(int i=0;i<blocksPerGrid;i++){
-        r_A_host[i] = 0.0;
-        r_B_host[i] = 0.0;
-    }
+
     //定義顯卡流
-    cudaStream_t streamA, streamB;
-    //創建流
-    cudaSetDevice(0);
-    cudaStreamCreate(&streamA);
-    cudaSetDevice(1);
-    cudaStreamCreate(&streamB);
+    cudaStream_t stream[num_gpus];
+    for(int i = 0; i < num_gpus; i++){
+        //創建流
+        cudaSetDevice(i);
+        cudaStreamCreate(&stream[i]);
+    }
+    cout << "顯卡流定義完成" << endl;
 
     //記憶體設定(異步)
-    cudaMemcpyAsync(a_A_device, a_A_host, N * sizeof(double), cudaMemcpyHostToDevice, streamA);
-    cudaMemcpyAsync(r_A_device, r_A_host, blocksPerGrid * sizeof(double), cudaMemcpyHostToDevice, streamA);
-    cudaMemcpyAsync(a_B_device, a_B_host, N * sizeof(double), cudaMemcpyHostToDevice, streamB);
-    cudaMemcpyAsync(r_B_device, r_B_host, blocksPerGrid * sizeof(double), cudaMemcpyHostToDevice, streamB);
-    //定義與創建開始和停止事件(Event)
-    cudaEvent_t start, stop;
-    cudaEventCreate(&start);
-    cudaEventCreate(&stop);
-    //紀錄開始事件(Event)
-    cudaEventRecord(start, 0);
-    //運用Kernel1進行運算
+    for(int i = 0; i < num_gpus; i++){
+        //創建流
+        cudaSetDevice(i);
+        cudaMemcpyAsync(a_device[i], a_host[i], N * sizeof(double),
+                                       cudaMemcpyHostToDevice, stream[i]);
+        cudaMemcpyAsync(r_device[i], r_host[i], blocksPerGrid * sizeof(double),
+                                       cudaMemcpyHostToDevice, stream[i]);
+    }
+    cout << "記憶體設定(異步)完成" << endl;
+
+    //定義開始和停止事件(Event)
+    cudaEvent_t start_events[num_gpus];
+    cudaEvent_t stop_events[num_gpus];
+
+    //創建開始和停止事件(Event)
+    for(int i = 0; i < num_gpus; i++){
+     cudaSetDevice(i);
+     cudaEventCreate(&start_events[i]);
+     cudaEventCreate(&stop_events[i]);
+    }
+    cout << "創建開始和停止事件完成" << endl;
 
     for(int i=0;i<iters;i++){
-        kernel1<<<blocksPerGrid, threadsPerBlock, 0, streamA>>>(a_A_device, r_A_device, N/2);
-        kernel1<<<blocksPerGrid, threadsPerBlock, 0, streamB>>>(a_B_device, r_B_device, N/2);
+        for(int i = 0; i < num_gpus; i++){
+            cudaSetDevice(i);
+            // In cudaEventRecord, ommit stream or set it to 0 to record
+            // in the default stream. It must be the same stream as
+            // where the kernel is launched.
+            //紀錄開始事件(Event)
+            cudaEventRecord(start_events[i], stream[i]);
+            //運用Kernel1進行運算
+            kernel1<<<blocksPerGrid, threadsPerBlock, 0, stream[i]>>>(a_device[i], r_device[i], N);
+            //紀錄停止事件(Event)
+            cudaEventRecord(stop_events[i], stream[i]);
+        }
+    }
+    cout << "運算完成" << endl;
+
+    for(int i = 0; i < num_gpus; i++){
+        cudaSetDevice(i);
+        cudaDeviceSynchronize();
+        cudaEventSynchronize(stop_events[i]);
+    }
+    cout << "計算經過時間" << endl;
+    float elapsedTime[num_gpus];
+    //計算開始事件至暫停事件所經時間
+    for(int i = 0; i < num_gpus; i++){
+        cudaEventElapsedTime(&elapsedTime[i], start_events[i], stop_events[i]);
+        total_time[i] = total_time[i] + (elapsedTime[i] / iters);
     }
 
-    //紀錄停止事件(Event)
-    cudaEventRecord(stop, 0);
-    //等待停止事件(Event)完成
-    cudaEventSynchronize(stop);
-    float elapsedTime;
-    //計算開始事件至暫停事件所經時間
-    cudaEventElapsedTime(&elapsedTime, start, stop);
-    total_time = total_time + (elapsedTime / iters);
-    //事件移除
-    cudaEventDestroy(start);
-    cudaEventDestroy(stop);
-    //主機與設備間記憶體複製
-    cudaMemcpy(r_A_host, r_A_device, blocksPerGrid * sizeof(double), cudaMemcpyDeviceToHost);
-    cudaMemcpy(r_B_host, r_B_device, blocksPerGrid * sizeof(double), cudaMemcpyDeviceToHost);
-    //varifyOutput(r_host, a_host, N);
+    cout << "事件移除" << endl;
+    for(int i = 0; i < num_gpus; i++){
+        cudaSetDevice(i);
+        cudaEventDestroy(start_events[i]);
+        cudaEventDestroy(stop_events[i]);
+    }
+
+    cout << "資料由顯卡記憶體傳輸至主機記憶體" << endl;
+    //資料由顯卡記憶體傳輸至主機記憶體
+    for(int i = 0; i < num_gpus; i++){
+        //創建流
+        cudaSetDevice(i);
+        cudaMemcpy(r_host[i], r_device[i], blocksPerGrid * sizeof(double),
+                                  cudaMemcpyDeviceToHost);
+    }
+
+    cout << "釋放記憶體" << endl;
     //釋放記憶體
-    cudaFree(r_A_device);
-    cudaFree(a_A_device);
-    cudaFree(r_B_device);
-    cudaFree(a_B_device);
-    cudaFreeHost(r_A_host);
-    cudaFreeHost(a_A_host);
-    cudaFreeHost(r_B_host);
-    cudaFreeHost(a_B_host);
-    cout << "GPU Elapse time for The Kernal 1" <<" :"<< total_time << " ms" << endl;
-    total_time = 0.0 ;
+    for(int i = 0; i < num_gpus; i++){
+        cudaSetDevice(i);
+        cudaFree(r_device[i]);
+        cudaFreeHost(r_host[i]);
+        cudaFree(a_device[i]);
+        cudaFreeHost(a_host[i]);
+    }
+
+    for(int i = 0; i < num_gpus; i++){
+        cout << "GPU "<< i <<" Elapse time for The Kernal 1 :"<< total_time[i] << " ms" << endl;
+        total_time[i] = 0.0 ;
+    }
     return 0;
 }
