@@ -45,24 +45,23 @@ int main(){
         //顯卡內存分配
         cudaMalloc(&a_device[i], N * sizeof(double));
         cudaMalloc(&r_device[i], blocksPerGrid * sizeof(double));
-        cout << i << endl;
     }
-    cout << "內存分配完成" << endl;
+    cout << "Memory Allocation Completed" << endl;
 
 
     //題目生成
     for(int i = 0; i < num_gpus; i++){
-        cout << "題目開始生成" << endl;
+        cout << "Generating list" << endl;
         for(int j=0;j<N;j++){
             a_host[i][j] = 1.0;
             //cout <<"i =" <<i<< "; j =" <<j<< endl;
         }
-        cout << "a_host生成完成" << endl;
+        cout << "a_host Generating Completed" << endl;
         for(int j=0;j<blocksPerGrid;j++){
             r_host[i][j] = 0.0;
             //cout <<"i =" <<i<< "; j =" <<j<< endl;
         }
-        cout << "r_host生成完成" << endl;
+        cout << "r_host Generating Completed" << endl;
     }
 
     //定義顯卡流
@@ -72,7 +71,7 @@ int main(){
         cudaSetDevice(i);
         cudaStreamCreate(&stream[i]);
     }
-    cout << "顯卡流定義完成" << endl;
+    cout << "GPU Stream Define Completed" << endl;
 
     //記憶體設定(異步)
     for(int i = 0; i < num_gpus; i++){
@@ -83,7 +82,7 @@ int main(){
         cudaMemcpyAsync(r_device[i], r_host[i], blocksPerGrid * sizeof(double),
                                        cudaMemcpyHostToDevice, stream[i]);
     }
-    cout << "記憶體設定(異步)完成" << endl;
+    cout << "Memory asynchronous Completed" << endl;
 
     //定義開始和停止事件(Event)
     cudaEvent_t start_events[num_gpus];
@@ -95,8 +94,8 @@ int main(){
      cudaEventCreate(&start_events[i]);
      cudaEventCreate(&stop_events[i]);
     }
-    cout << "創建開始和停止事件完成" << endl;
-
+    cout << "Create Start & Stop Event Completed" << endl;
+    cout << "Start Calculation" << endl;
     for(int i=0;i<iters;i++){
         for(int i = 0; i < num_gpus; i++){
             cudaSetDevice(i);
@@ -111,14 +110,14 @@ int main(){
             cudaEventRecord(stop_events[i], stream[i]);
         }
     }
-    cout << "運算完成" << endl;
+    cout << "Calculation Completed" << endl;
 
     for(int i = 0; i < num_gpus; i++){
         cudaSetDevice(i);
         cudaDeviceSynchronize();
         cudaEventSynchronize(stop_events[i]);
     }
-    cout << "計算經過時間" << endl;
+    cout << "Calculation time" << endl;
     float elapsedTime[num_gpus];
     //計算開始事件至暫停事件所經時間
     for(int i = 0; i < num_gpus; i++){
@@ -126,14 +125,14 @@ int main(){
         total_time[i] = total_time[i] + (elapsedTime[i] / iters);
     }
 
-    cout << "事件移除" << endl;
+    cout << "Event Destroy" << endl;
     for(int i = 0; i < num_gpus; i++){
         cudaSetDevice(i);
         cudaEventDestroy(start_events[i]);
         cudaEventDestroy(stop_events[i]);
     }
 
-    cout << "資料由顯卡記憶體傳輸至主機記憶體" << endl;
+    cout << "Share Memory form Device to Host" << endl;
     //資料由顯卡記憶體傳輸至主機記憶體
     for(int i = 0; i < num_gpus; i++){
         //創建流
@@ -142,7 +141,7 @@ int main(){
                                   cudaMemcpyDeviceToHost);
     }
 
-    cout << "釋放記憶體" << endl;
+    cout << "Free Memory" << endl;
     //釋放記憶體
     for(int i = 0; i < num_gpus; i++){
         cudaSetDevice(i);
