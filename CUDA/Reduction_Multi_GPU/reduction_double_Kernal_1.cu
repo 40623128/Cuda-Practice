@@ -2,13 +2,13 @@
 #include<time.h>
 using namespace std;
 
-const int num_gpus = 2;
+const int num_gpus = 8;
 //經測試於RTX3070最佳值為128，接著為256。
 const int threadsPerBlock = 128;
 //相加之元素個數(2^30-3)
-const int N               = (1 <<28 );
+const int N               = (1 <<28 )/num_gpus;
 const int blocksPerGrid   = (N + threadsPerBlock - 1)/threadsPerBlock;
-const int iters           = 100;
+const int iters           = 1;
 //const int kernal_number = 7;
 //kernel1
 __global__ void kernel1(double* arr, double* out, int N){
@@ -50,25 +50,25 @@ int main(){
 
 
     //題目生成
+    cout << "Generating list" << endl;
     for(int i = 0; i < num_gpus; i++){
-        cout << "Generating list" << endl;
         for(int j=0;j<N;j++){
             a_host[i][j] = 1.0;
             //cout <<"i =" <<i<< "; j =" <<j<< endl;
         }
-        cout << "a_host Generating Completed" << endl;
+        cout << "a_host "<< i <<" Generating Completed" << endl;
         for(int j=0;j<blocksPerGrid;j++){
             r_host[i][j] = 0.0;
             //cout <<"i =" <<i<< "; j =" <<j<< endl;
         }
-        cout << "r_host Generating Completed" << endl;
+        cout << "r_host "<< i <<" Generating Completed" << endl;
     }
 
     //定義顯卡流
     cudaStream_t stream[num_gpus];
     for(int i = 0; i < num_gpus; i++){
         //創建流
-        cudaSetDevice(i);
+        //cudaSetDevice(i);
         cudaStreamCreate(&stream[i]);
     }
     cout << "GPU Stream Define Completed" << endl;
@@ -96,18 +96,18 @@ int main(){
     }
     cout << "Create Start & Stop Event Completed" << endl;
     cout << "Start Calculation" << endl;
-    for(int i=0;i<iters;i++){
+    for(int j=0;j<iters;j++){
         for(int i = 0; i < num_gpus; i++){
             cudaSetDevice(i);
             // In cudaEventRecord, ommit stream or set it to 0 to record
             // in the default stream. It must be the same stream as
             // where the kernel is launched.
             //紀錄開始事件(Event)
-            cudaEventRecord(start_events[i], stream[i]);
+            cudaEventRecord(start_events[i], stream[0]);
             //運用Kernel1進行運算
-            kernel1<<<blocksPerGrid, threadsPerBlock, 0, stream[i]>>>(a_device[i], r_device[i], N);
+            kernel1<<<blocksPerGrid, threadsPerBlock, 0, stream[0]>>>(a_device[i], r_device[i], N);
             //紀錄停止事件(Event)
-            cudaEventRecord(stop_events[i], stream[i]);
+            cudaEventRecord(stop_events[i], stream[0]);
         }
     }
     cout << "Calculation Completed" << endl;
@@ -123,7 +123,19 @@ int main(){
     for(int i = 0; i < num_gpus; i++){
         cudaEventElapsedTime(&elapsedTime[i], start_events[i], stop_events[i]);
         total_time[i] = total_time[i] + (elapsedTime[i] / iters);
+        //cout << "total_time "<< i << "= " << total_time[i] << endl;
+        //cout << "elapsedTime "<< i << "= " << elapsedTime[i] << endl;
     }
+
+    for(int i = 0; i < num_gpus; i++){
+        if (i ==0){
+            total_time[i] = total_time[i];
+        }
+        else{
+        total_time[i] = total_time[i-1] + total_time[i];
+        }
+        }
+
 
     cout << "Event Destroy" << endl;
     for(int i = 0; i < num_gpus; i++){
@@ -154,6 +166,7 @@ int main(){
     for(int i = 0; i < num_gpus; i++){
         cout << "GPU "<< i <<" Elapse time for The Kernal 1 :"<< total_time[i] << " ms" << endl;
         total_time[i] = 0.0 ;
+        elapsedTime[i] = 0.0 ;
     }
     return 0;
 }
