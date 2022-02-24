@@ -6,20 +6,13 @@
 
 
 using std::cout;using std::endl;
-
+const int num_node = 2;
 const int num_gpus = 8;
 const int threadsPerBlock = 128;
-const int N               = (1 <<28 )/num_gpus;
+const int N               = (1 <<30 )/num_gpus/num_node;
 const int blocksPerGrid   = (N + threadsPerBlock - 1)/threadsPerBlock;
 const int iters           = 1;
 
-/*
-__global__ void __multiply__ (const float *a, float *b)
-{
-    const int i = threadIdx.x + blockIdx.x * blockDim.x;
-    b[i] *= a[i];
-}
-*/
 __global__ void __multiply__(double* arr, double* out, int N){
     __shared__ double s_data[threadsPerBlock];
     //每個線程讀取一個元素
@@ -44,6 +37,9 @@ __global__ void __multiply__(double* arr, double* out, int N){
 
 extern "C" void launch_multiply(const float *a, const float *b)
 {
+
+
+
     float total_time[num_gpus];
     double* a_host[num_gpus], *r_host[num_gpus];
     double* a_device[num_gpus], *r_device[num_gpus];

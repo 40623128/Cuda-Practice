@@ -1,0 +1,18 @@
+Hello world from processor gn1227.twcc.ai,rank 0 out of 1 processors
+Memory Allocation Completed
+Generating list
+a_host 0 Generating Completed
+r_host 0 Generating Completed
+GPU Stream Define Completed
+Memory asynchronous Completed
+Create Start & Stop Event Completed
+Start Calculation
+Calculation Completed
+Calculation time
+total_time 0= 20.2704
+elapsedTime 0= 20.2704
+Event Destroy
+Share Memory form Device to Host
+Free Memory
+GPU 0 Elapse time for The Kernal 1 :20.2704 ms
+world_rank 0 finshed
