@@ -8,3 +8,5 @@
 *.exp
 *.lib
 *.kate-swp
+*.o
+*.out

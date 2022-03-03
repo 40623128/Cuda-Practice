@@ -9,7 +9,7 @@ using std::cout;using std::endl;
 const int num_node = 2;
 const int num_gpus = 8;
 const int threadsPerBlock = 128;
-const int N               = (1 <<30 )/num_gpus/num_node;
+const int N               = (1 <<27 )/num_gpus/num_node;
 const int blocksPerGrid   = (N + threadsPerBlock - 1)/threadsPerBlock;
 const int iters           = 1;
 
@@ -35,7 +35,7 @@ __global__ void __multiply__(double* arr, double* out, int N){
     }
 }
 
-extern "C" void launch_multiply(const float *a, const float *b)
+extern "C" void launch_multiply(const double *a, const double *b)
 {
 
 

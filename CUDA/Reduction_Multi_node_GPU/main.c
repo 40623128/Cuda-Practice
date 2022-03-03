@@ -2,7 +2,7 @@
 #include <mpi.h>
 #include<time.h>
 #include <stdio.h>
-void launch_multiply(const float *a, float *b);
+void launch_multiply(const double *a, double *b);
 
 int main (int argc, char **argv)
 {
@@ -29,14 +29,14 @@ int main (int argc, char **argv)
            processor_name,world_rank,world_size);
 
     if (world_rank==0){
-    const float *a;
-    float *b;
+    const double *a;
+    double *b;
     launch_multiply (a, b);
     printf("world_rank %d finshed\n",world_rank);
     }
     else{
-    const float *a;
-    float *b;
+    const double *a;
+    double *b;
     launch_multiply (a, b);
     printf("world_rank %d finshed\n",world_rank);
     }
