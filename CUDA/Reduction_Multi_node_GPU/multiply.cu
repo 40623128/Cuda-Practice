@@ -3,14 +3,7 @@
 #include<time.h>
 #include <cuda.h>
 #include <cuda_runtime.h>
-
-
-using std::cout;using std::endl;
-//const int num_node = 2;
-//const int num_gpus = 8;
 const int threadsPerBlock = 128;
-const int N               = (1 <<25 );
-const int blocksPerGrid   = (N + threadsPerBlock - 1)/threadsPerBlock;
 const int iters           = 1;
 
 __global__ void __multiply__(double* arr, double* out, int N){
@@ -35,24 +28,29 @@ __global__ void __multiply__(double* arr, double* out, int N){
     }
 }
 
-extern "C" void launch_multiply(const int num_node, const int num_gpus)
+extern "C" void launch_multiply(const int N ,const int num_node, const int num_gpus,double** a_host)
 {
+    const int Gpu_N = N/num_node/num_gpus;
+    const int blocksPerGrid   = (Gpu_N + threadsPerBlock - 1)/threadsPerBlock;
+
+
     printf("num_node = %d\n"
-            "num_gpus = %d\n",
-           num_node,num_gpus);
+            "num_gpus = %d\n"
+            "a_host = %f\n",
+           num_node,num_gpus,*a_host[2]);
 
     float total_time[num_gpus];
-    double* a_host[num_gpus], *r_host[num_gpus];
-    double* a_device[num_gpus], *r_device[num_gpus];
+    double *r_host[num_gpus];
+    double *a_device[num_gpus], *r_device[num_gpus];
 
 
     //內存分配
     for(int i = 0; i < num_gpus; i++){
         //主機內存分配
-        cudaMallocHost(&a_host[i], N * sizeof(double));
+        //cudaMallocHost(&a_host[i], Gpu_N * sizeof(double));
         cudaMallocHost(&r_host[i], blocksPerGrid * sizeof(double));
         //顯卡內存分配
-        cudaMalloc(&a_device[i], N * sizeof(double));
+        cudaMalloc(&a_device[i], Gpu_N * sizeof(double));
         cudaMalloc(&r_device[i], blocksPerGrid * sizeof(double));
     }
     printf("Memory Allocation Completed\n");
@@ -61,11 +59,6 @@ extern "C" void launch_multiply(const int num_node, const int num_gpus)
     //題目生成
     printf("Generating list\n");
     for(int i = 0; i < num_gpus; i++){
-        for(int j=0;j<N;j++){
-            a_host[i][j] = 1.0;
-            //printf("i = %d ;j = %d\n",i,j);
-        }
-        printf("a_host %d Generating Completed\n",i);
         for(int j=0;j<blocksPerGrid;j++){
             r_host[i][j] = 0.0;
             //printf("i = %d ;j = %d\n",i,j);
@@ -88,7 +81,7 @@ extern "C" void launch_multiply(const int num_node, const int num_gpus)
     for(int i = 0; i < num_gpus; i++){
         //創建流
         cudaSetDevice(i);
-        cudaMemcpyAsync(a_device[i], a_host[i], N * sizeof(double),
+        cudaMemcpyAsync(a_device[i], a_host[i], Gpu_N * sizeof(double),
                                        cudaMemcpyHostToDevice, stream[i]);
         cudaMemcpyAsync(r_device[i], r_host[i], blocksPerGrid * sizeof(double),
                                        cudaMemcpyHostToDevice, stream[i]);
@@ -118,7 +111,7 @@ extern "C" void launch_multiply(const int num_node, const int num_gpus)
             //紀錄開始事件(Event)
             cudaEventRecord(start_events[i], stream[0]);
             //運用Kernel1進行運算
-            __multiply__ <<<blocksPerGrid, threadsPerBlock, 0, stream[0]>>>(a_device[i], r_device[i], N);
+            __multiply__ <<<blocksPerGrid, threadsPerBlock, 0, stream[0]>>>(a_device[i], r_device[i], Gpu_N);
             //紀錄停止事件(Event)
             cudaEventRecord(stop_events[i], stream[0]);
         }
