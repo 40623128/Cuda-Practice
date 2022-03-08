@@ -2,7 +2,10 @@
 #include <mpi.h>
 #include<time.h>
 #include <stdio.h>
-void launch_multiply(const double *a, double *b);
+void launch_multiply(const int num_node, const int num_gpus);
+const int N               = (1 <<25 );
+const int num_node = 1;
+const int num_gpus = 2;
 
 int main (int argc, char **argv)
 {
@@ -29,15 +32,12 @@ int main (int argc, char **argv)
            processor_name,world_rank,world_size);
 
     if (world_rank==0){
-    const double *a;
-    double *b;
-    launch_multiply (a, b);
+
+    launch_multiply (num_node, num_gpus);
     printf("world_rank %d finshed\n",world_rank);
     }
     else{
-    const double *a;
-    double *b;
-    launch_multiply (a, b);
+    launch_multiply (num_node, num_gpus);
     printf("world_rank %d finshed\n",world_rank);
     }
     MPI_Finalize();
