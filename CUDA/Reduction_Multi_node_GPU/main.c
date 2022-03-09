@@ -4,11 +4,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void launch_multiply(const int N,const int num_node, const int num_gpus,
-                    double** node_host);
-const int N               = (1 <<9);
+double *launch_multiply(const int N,const int num_node, const int num_gpus,
+                    double** node_host );
+const int N               = (1 <<16);
 const int num_node = 2;
-const int num_gpus = 4;
+const int num_gpus = 2;
+double *GPU_anser;
 
 int main (int argc, char **argv)
 {
@@ -18,7 +19,7 @@ int main (int argc, char **argv)
     problem_list = malloc(sizeof(double)*N);
     for(int i = 0; i < N; i++)
     {
-        problem_list[i] = 1*i;
+        problem_list[i] = 1;
     }
     printf("problem_list Generating Completed\n");
 
@@ -48,7 +49,6 @@ int main (int argc, char **argv)
     }
 
 
-
     int world_size, world_rank;
     //MPI 初始化
     MPI_Init (&argc, &argv);
@@ -68,14 +68,17 @@ int main (int argc, char **argv)
            processor_name,world_rank,world_size);
 
 
-
-    if (world_rank==0){
-    launch_multiply (N,num_node, num_gpus,node_host[0]);
+    if (world_rank==0)
+    {
+    double *ans1 = launch_multiply(N,num_node, num_gpus,node_host[0]);
     printf("world_rank %d finshed\n",world_rank);
+    printf("GPU_anser node 1 = %f \n",ans1[127]);
     }
-    else{
-    launch_multiply (N,num_node, num_gpus,node_host[1]);
+    else
+    {
+    double *ans2 = launch_multiply (N,num_node, num_gpus,node_host[1]);
     printf("world_rank %d finshed\n",world_rank);
+    printf("GPU_anser node 2 = %f \n",ans2[0]);
     }
     MPI_Finalize();
     return 0;

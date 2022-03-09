@@ -6,6 +6,8 @@
 const int threadsPerBlock = 128;
 const int iters           = 1;
 
+/*
+//Reduction 001
 __global__ void __multiply__(double* arr, double* out, int N){
     __shared__ double s_data[threadsPerBlock];
     //每個線程讀取一個元素
@@ -27,23 +29,56 @@ __global__ void __multiply__(double* arr, double* out, int N){
         out[blockIdx.x] = s_data[0];
     }
 }
+*/
 
-extern "C" void launch_multiply(const int N ,const int num_node, const int num_gpus,double** a_host)
+//Reduction 002
+__global__ void __multiply__(double* arr, double* out, int N){
+    __shared__ float s_data[threadsPerBlock];
+    unsigned int tid = threadIdx.x;
+    unsigned int i = threadIdx.x + blockIdx.x * blockDim.x;
+    if(i < N){
+        s_data[tid] = arr[i];
+    }
+    __syncthreads();
+
+    for(int s = blockDim.x/2; s > 0; s>>=1){
+        if(tid < s && i + s < N){
+            s_data[tid] += s_data[tid + s];
+        }
+        __syncthreads();
+    }
+
+    if(tid == 0){
+        out[blockIdx.x] = s_data[0];
+    }
+}
+
+
+
+
+
+
+extern "C" double *launch_multiply(const int N ,const int num_node, const int num_gpus,double** a_host)
 {
     const int Gpu_N = N/num_node/num_gpus;
     const int blocksPerGrid   = (Gpu_N + threadsPerBlock - 1)/threadsPerBlock;
 
 
+    //data check
+    for(int i = 0; i < 1; i++)
+    {
+        printf("a_host %d = %f\n",
+           i,a_host[0][i]);
+    }
     printf("num_node = %d\n"
             "num_gpus = %d\n"
             "a_host = %f\n",
            num_node,num_gpus,*a_host[2]);
 
+
     float total_time[num_gpus];
     double *r_host[num_gpus];
     double *a_device[num_gpus], *r_device[num_gpus];
-
-
     //內存分配
     for(int i = 0; i < num_gpus; i++){
         //主機內存分配
@@ -157,23 +192,27 @@ extern "C" void launch_multiply(const int N ,const int num_node, const int num_g
 
     printf("Share Memory form Device to Host\n");
     //資料由顯卡記憶體傳輸至主機記憶體
-    for(int i = 0; i < num_gpus; i++){
+    for(int i = 0; i < num_gpus; i++)
+    {
         //創建流
         cudaSetDevice(i);
-        cudaMemcpy(r_host[i], r_device[i],
-                   blocksPerGrid * sizeof(double),
+        cudaMemcpy(r_host[i], r_device[i],blocksPerGrid * sizeof(double),
                    cudaMemcpyDeviceToHost);
-    }
 
+        for(int j = 0; j < 256; j++)
+        {
+            printf("r_host %d %d = %f\n",i,j,r_host[i][j]);
+        }
+    }
 
     printf("Free Memory\n");
     //釋放記憶體
     for(int i = 0; i < num_gpus; i++){
         cudaSetDevice(i);
         cudaFree(r_device[i]);
-        cudaFreeHost(r_host[i]);
+        //cudaFreeHost(r_host[i]);
         cudaFree(a_device[i]);
-        cudaFreeHost(a_host[i]);
+        //cudaFreeHost(a_host[i]);
     }
 
 
@@ -182,4 +221,5 @@ extern "C" void launch_multiply(const int N ,const int num_node, const int num_g
         total_time[i] = 0.0 ;
         elapsedTime[i] = 0.0 ;
     }
+    return *r_host;
 }
