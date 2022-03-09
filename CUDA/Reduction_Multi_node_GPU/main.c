@@ -6,10 +6,9 @@
 
 double *launch_multiply(const int N,const int num_node, const int num_gpus,
                     double** node_host );
-const int N               = (1 <<16);
-const int num_node = 2;
-const int num_gpus = 2;
-double *GPU_anser;
+const int N               = (1 <<8);
+const int num_node = 1;
+const int num_gpus = 1;
 
 int main (int argc, char **argv)
 {
@@ -19,7 +18,7 @@ int main (int argc, char **argv)
     problem_list = malloc(sizeof(double)*N);
     for(int i = 0; i < N; i++)
     {
-        problem_list[i] = 1;
+        problem_list[i] = 1*i;
     }
     printf("problem_list Generating Completed\n");
 
@@ -72,7 +71,15 @@ int main (int argc, char **argv)
     {
     double *ans1 = launch_multiply(N,num_node, num_gpus,node_host[0]);
     printf("world_rank %d finshed\n",world_rank);
-    printf("GPU_anser node 1 = %f \n",ans1[127]);
+    printf("GPU_anser node 1 = %f \n",ans1[1]);
+    double Ans = 0.0;
+    int i = 0;
+    while((ans1[i]) != 0)
+    {
+        Ans = Ans + ans1[i];
+        i++;
+    }
+    printf("Ans = %f \n",Ans);
     }
     else
     {

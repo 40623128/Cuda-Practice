@@ -63,7 +63,7 @@ extern "C" double *launch_multiply(const int N ,const int num_node, const int nu
     const int Gpu_N = N/num_node/num_gpus;
     const int blocksPerGrid   = (Gpu_N + threadsPerBlock - 1)/threadsPerBlock;
 
-
+    /*
     //data check
     for(int i = 0; i < 1; i++)
     {
@@ -73,8 +73,8 @@ extern "C" double *launch_multiply(const int N ,const int num_node, const int nu
     printf("num_node = %d\n"
             "num_gpus = %d\n"
             "a_host = %f\n",
-           num_node,num_gpus,*a_host[2]);
-
+           num_node,num_gpus,*a_host[0]);
+    */
 
     float total_time[num_gpus];
     double *r_host[num_gpus];
@@ -199,7 +199,7 @@ extern "C" double *launch_multiply(const int N ,const int num_node, const int nu
         cudaMemcpy(r_host[i], r_device[i],blocksPerGrid * sizeof(double),
                    cudaMemcpyDeviceToHost);
 
-        for(int j = 0; j < 256; j++)
+        for(int j = 0; j < 1; j++)
         {
             printf("r_host %d %d = %f\n",i,j,r_host[i][j]);
         }
