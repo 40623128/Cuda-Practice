@@ -5,7 +5,7 @@
 #include <stdlib.h>
 
 double *launch_multiply(const int N,const int num_node,double* node_host,int world_rank);
-const int N               = (1 <<20);
+const int N               = (1 <<12);
 const int num_node = 2;
 
 int main (int argc, char **argv)
@@ -15,7 +15,7 @@ int main (int argc, char **argv)
     double* problem_list;
     problem_list = malloc(sizeof(double)*N);
     for(int i = 0; i < N; i++){
-        problem_list[i] = 1.0;
+        problem_list[i] = 1.0+i;
     }
     printf("problem_list Generating Completed\n");
 
