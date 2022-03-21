@@ -54,7 +54,7 @@ __global__ void __multiply__(double *arr, double *out, int N){
 
     if(tid == 0){
         out[blockIdx.x] = s_data[0];
-        printf("s_data[0] = %f\n",s_data[0]);
+        //printf("s_data[0] = %f\n",s_data[0]);
     }
 }
 
@@ -69,13 +69,10 @@ extern "C" double *launch_multiply(const int N ,const int num_node,
     int num_gpus;
     cudaGetDeviceCount(&num_gpus);
     for(int i=0;i<num_gpus;i++) {
-    // Query the device properties.
-    cudaDeviceProp prop;
-    cudaGetDeviceProperties(&prop, i);
-    printf("Device id: %d\n", i);
-    printf("Device name: %s\n", prop.name);
-    //printf("Node %d Device id: %d\n", world_rank, i);
-    //printf("Node %d Device name: %s\n", world_rank, prop.name);
+        cudaDeviceProp prop;
+        cudaGetDeviceProperties(&prop, i);
+        printf("Device id: %d\n", i);
+        printf("Device name: %s\n", prop.name);
     }
 
     const int Gpu_N = N/num_node/num_gpus;
@@ -90,7 +87,6 @@ extern "C" double *launch_multiply(const int N ,const int num_node,
 
     /*  內存分配
      *      主機內存分配
-     *      顯卡內存分配
      */
     float total_time[num_gpus];
     double *r_host[num_gpus],*a_host[num_gpus];
@@ -98,8 +94,6 @@ extern "C" double *launch_multiply(const int N ,const int num_node,
     for(int i = 0; i < num_gpus; i++){
         cudaMallocHost(&a_host[i], Gpu_N * sizeof(double));
         cudaMallocHost(&r_host[i], blocksPerGrid * sizeof(double));
-        cudaMalloc(&a_device[i], Gpu_N * sizeof(double));
-        cudaMalloc(&r_device[i], blocksPerGrid * sizeof(double));
     }
     printf("Node %d Memory Allocation Completed\n",world_rank);
 
@@ -119,8 +113,11 @@ extern "C" double *launch_multiply(const int N ,const int num_node,
     //定義顯卡流
     cudaStream_t stream[num_gpus];
     for(int i = 0; i < num_gpus; i++){
-        //創建流
         cudaSetDevice(i);
+        //顯卡內存分配
+        cudaMalloc(&a_device[i], Gpu_N * sizeof(double));
+        cudaMalloc(&r_device[i], blocksPerGrid * sizeof(double));
+        //創建流
         cudaStreamCreate(&stream[i]);
     }
     printf("ERROR_cudaStreamCreate = %s\n",cudaGetErrorString(cudaGetLastError()));
@@ -167,17 +164,6 @@ extern "C" double *launch_multiply(const int N ,const int num_node,
     }
     printf("Node %d Calculation Completed\n",world_rank);
 
-
-
-    /*
-    for(int i = 0; i < num_gpus; i++){
-        cudaSetDevice(i);
-        cudaDeviceSynchronize();
-        cudaEventSynchronize(stop_events[i]);
-    }
-    printf("Node %d Calculation time\n",world_rank);
-    */
-
     float elapsedTime[num_gpus];
     //計算開始事件至暫停事件所經時間
     for(int i = 0; i < num_gpus; i++){
@@ -213,7 +199,7 @@ extern "C" double *launch_multiply(const int N ,const int num_node,
         //cudaMemcpy(r_host[i], r_device[i],blocksPerGrid * sizeof(double),cudaMemcpyDeviceToHost);
         cudaMemcpyAsync(r_host[i], r_device[i],blocksPerGrid * sizeof(double),cudaMemcpyDeviceToHost,stream[i]);
         printf("ERROR_cudaMemcpyAsync Node %d GPU %d ERROR = %s\n",world_rank,i,cudaGetErrorString(cudaGetLastError()));
-        printf("Node %d r_host[%d][0] = %f\n",world_rank,i, r_host[i][0]);
+        //printf("Node %d r_host[%d][0] = %f\n",world_rank,i, r_host[i][0]);
     }
 
     printf("Node %d Free Memory\n",world_rank);
@@ -228,10 +214,8 @@ extern "C" double *launch_multiply(const int N ,const int num_node,
 
 
     for(int i = 0; i < num_gpus; i++){
-        /*
         printf("Node %d GPU %d Elapse time for The __multiply__ : %f ms\n",
         world_rank,i, total_time[i]);
-        */
         total_time[i] = 0.0 ;
         elapsedTime[i] = 0.0 ;
     }
@@ -244,11 +228,11 @@ extern "C" double *launch_multiply(const int N ,const int num_node,
             else if (r_host[i][j] != 0){
             r_host[0][0] = r_host[0][0] + r_host[i][j];
             }
-            printf("Node %d r_host[%d][%d] = %f\n", world_rank, i, j, r_host[i][j]);
-            printf("Node %d Ans [%d][%d] = %f\n", world_rank, i, j, r_host[0][0]);
+            //printf("Node %d r_host[%d][%d] = %f\n", world_rank, i, j, r_host[i][j]);
+            //printf("Node %d Ans [%d][%d] = %f\n", world_rank, i, j, r_host[0][0]);
         }
     }
-    printf("r_host[0][0] = %f\n",r_host[0][0]);
+    //printf("r_host[0][0] = %f\n",r_host[0][0]);
 
     return *r_host;
 }
