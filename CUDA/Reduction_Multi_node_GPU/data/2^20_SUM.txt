@@ -1,0 +1,119 @@
+Generating list
+Generating list
+problem_list Generating Completed
+Memory Allocation Completed
+problem_list Generating Completed
+Memory Allocation Completed
+Device id: 0
+Device name: Tesla V100-SXM2-32GB
+Device id: 1
+Device name: Tesla V100-SXM2-32GB
+Device id: 2
+Device name: Tesla V100-SXM2-32GB
+Device id: 3
+Device name: Tesla V100-SXM2-32GB
+Device id: 4
+Device name: Tesla V100-SXM2-32GB
+Device id: 5
+Device name: Tesla V100-SXM2-32GB
+Device id: 6
+Device name: Tesla V100-SXM2-32GB
+Device id: 7
+Device name: Tesla V100-SXM2-32GB
+Node 0
+N = 1048576
+num_node = 2
+num_gpus = 8
+node_host = 1.000000
+Device id: 0
+Device name: Tesla V100-SXM2-32GB
+Device id: 1
+Device name: Tesla V100-SXM2-32GB
+Device id: 2
+Device name: Tesla V100-SXM2-32GB
+Device id: 3
+Device name: Tesla V100-SXM2-32GB
+Device id: 4
+Device name: Tesla V100-SXM2-32GB
+Device id: 5
+Device name: Tesla V100-SXM2-32GB
+Device id: 6
+Device name: Tesla V100-SXM2-32GB
+Device id: 7
+Device name: Tesla V100-SXM2-32GB
+Node 1
+N = 1048576
+num_node = 2
+num_gpus = 8
+node_host = 524289.000000
+Node 0 Memory Allocation Completed
+Node 0 Generating list
+Node 1 Memory Allocation Completed
+Node 1 Generating list
+ERROR_cudaStreamCreate = no error
+Node 1 GPU Stream Define Completed
+Node 1 Memory asynchronous Completed
+Node 1 Create Start & Stop Event Completed
+Node 1 Start Calculation
+Node 1 GPU 0 ERROR = no error
+Node 1 GPU 1 ERROR = no error
+Node 1 GPU 2 ERROR = no error
+Node 1 GPU 3 ERROR = no error
+Node 1 GPU 4 ERROR = no error
+Node 1 GPU 5 ERROR = no error
+Node 1 GPU 6 ERROR = no error
+Node 1 GPU 7 ERROR = no error
+Node 1 Calculation Completed
+Node 1 Event Destroy
+Node 1 Share Memory form Device to Host
+ERROR_cudaMemcpyAsync Node 1 GPU 0 ERROR = no error
+ERROR_cudaMemcpyAsync Node 1 GPU 1 ERROR = no error
+ERROR_cudaMemcpyAsync Node 1 GPU 2 ERROR = no error
+ERROR_cudaMemcpyAsync Node 1 GPU 3 ERROR = no error
+ERROR_cudaMemcpyAsync Node 1 GPU 4 ERROR = no error
+ERROR_cudaMemcpyAsync Node 1 GPU 5 ERROR = no error
+ERROR_cudaMemcpyAsync Node 1 GPU 6 ERROR = no error
+ERROR_cudaMemcpyAsync Node 1 GPU 7 ERROR = no error
+Node 1 Free Memory
+Node 1 GPU 0 Elapse time for The __multiply__ : 0.045152 ms
+Node 1 GPU 1 Elapse time for The __multiply__ : 0.382876 ms
+Node 1 GPU 2 Elapse time for The __multiply__ : 0.399708 ms
+Node 1 GPU 3 Elapse time for The __multiply__ : 0.414748 ms
+Node 1 GPU 4 Elapse time for The __multiply__ : 0.430012 ms
+Node 1 GPU 5 Elapse time for The __multiply__ : 0.445948 ms
+Node 1 GPU 6 Elapse time for The __multiply__ : 0.461596 ms
+Node 1 GPU 7 Elapse time for The __multiply__ : 0.475132 ms
+ERROR_cudaStreamCreate = no error
+Node 0 GPU Stream Define Completed
+Node 0 Memory asynchronous Completed
+Node 0 Create Start & Stop Event Completed
+Node 0 Start Calculation
+Node 0 GPU 0 ERROR = no error
+Node 0 GPU 1 ERROR = no error
+Node 0 GPU 2 ERROR = no error
+Node 0 GPU 3 ERROR = no error
+Node 0 GPU 4 ERROR = no error
+Node 0 GPU 5 ERROR = no error
+Node 0 GPU 6 ERROR = no error
+Node 0 GPU 7 ERROR = no error
+Node 0 Calculation Completed
+Node 0 Event Destroy
+Node 0 Share Memory form Device to Host
+ERROR_cudaMemcpyAsync Node 0 GPU 0 ERROR = no error
+ERROR_cudaMemcpyAsync Node 0 GPU 1 ERROR = no error
+ERROR_cudaMemcpyAsync Node 0 GPU 2 ERROR = no error
+ERROR_cudaMemcpyAsync Node 0 GPU 3 ERROR = no error
+ERROR_cudaMemcpyAsync Node 0 GPU 4 ERROR = no error
+ERROR_cudaMemcpyAsync Node 0 GPU 5 ERROR = no error
+ERROR_cudaMemcpyAsync Node 0 GPU 6 ERROR = no error
+ERROR_cudaMemcpyAsync Node 0 GPU 7 ERROR = no error
+Node 0 Free Memory
+Node 0 GPU 0 Elapse time for The __multiply__ : 0.043552 ms
+Node 0 GPU 1 Elapse time for The __multiply__ : 0.060320 ms
+Node 0 GPU 2 Elapse time for The __multiply__ : 0.076768 ms
+Node 0 GPU 3 Elapse time for The __multiply__ : 0.092064 ms
+Node 0 GPU 4 Elapse time for The __multiply__ : 0.107968 ms
+Node 0 GPU 5 Elapse time for The __multiply__ : 0.123808 ms
+Node 0 GPU 6 Elapse time for The __multiply__ : 0.139008 ms
+Node 0 GPU 7 Elapse time for The __multiply__ : 0.152128 ms
+final ans = 549756338176.000000 
