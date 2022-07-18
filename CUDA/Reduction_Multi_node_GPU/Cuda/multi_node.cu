@@ -39,6 +39,7 @@ __global__ void kernel1(double* arr, double* out, int N){
 
 
 int main(int argc, char *argv[]) {
+	
 	/************************
 	*MPI初始化           	*
 	*得到當前的rank(秩)  	*
@@ -56,9 +57,9 @@ int main(int argc, char *argv[]) {
 	int device;
 	cudaError_t err;
 	cudaGetDeviceCount(&num_gpus);
-	printf("num_gpus = %d\n",num_gpus);
-	err = cudaGetDevice(&device);
-	printf("cudaGetDevice = %d\n",err);
+	printf("node_%d_num_gpus = %d\n", world_rank,num_gpus);
+	//err = cudaGetDevice(&device);
+	//printf("cudaGetDevice = %d\n",err);
 
 	const int N = Total_N/num_gpus;
 	const int blocksPerGrid   = (N + threadsPerBlock - 1)/threadsPerBlock;
@@ -71,20 +72,20 @@ int main(int argc, char *argv[]) {
 		cudaMallocHost(&r_host[i], blocksPerGrid * sizeof(double));
 		//顯卡內存分配
 	}
-	cout << "Memory Allocation Completed" << endl;
+	//cout << "Memory Allocation Completed" << endl;
 
 
 	//題目生成
-	cout << "Generating list" << endl;
+	//cout << "Generating list" << endl;
 	for(int i = 0; i < num_gpus; i++){
 		for(int j=0;j<N;j++){
 			a_host[i][j] = 1.0+i*N+j;
 		}
-		cout << "a_host "<< i <<" Generating Completed" << endl;
+		//cout << "a_host "<< i <<" Generating Completed" << endl;
 		for(int j=0;j<blocksPerGrid;j++){
 			r_host[i][j] = 0.0;
 		}
-		cout << "r_host "<< i <<" Generating Completed" << endl;
+		//cout << "r_host "<< i <<" Generating Completed" << endl;
 	}
 
 
@@ -97,12 +98,12 @@ int main(int argc, char *argv[]) {
 	//定義顯卡流
 	for(int i = 0; i < num_gpus; i++){
 		err = cudaSetDevice(i);
-		printf("GPU %d Set Device = %d\n",i,err);
+		//printf("GPU %d Set Device = %d\n",i,err);
 		err = cudaGetDevice(&device);
-		printf("GPU %d Get Device = %d\n",i,err);
+		//printf("GPU %d Get Device = %d\n",i,err);
 		//定義顯卡流
 		cudaStreamCreate(&stream[i]);
-		printf("GPU %d Stream Define Completed\n",i);
+		//printf("GPU %d Stream Define Completed\n",i);
 
 		cudaMalloc(&a_device[i], N * sizeof(double));
 		cudaMalloc(&r_device[i], blocksPerGrid * sizeof(double));
@@ -114,15 +115,15 @@ int main(int argc, char *argv[]) {
 						cudaMemcpyHostToDevice,stream[i]);
 		cudaMemcpyAsync(r_device[i], r_host[i], blocksPerGrid * sizeof(double),
 						cudaMemcpyHostToDevice,stream[i]);
-		printf("Mem ERROR GPU %d = %s\n",i,cudaGetErrorString(cudaGetLastError()));
-		printf("Memory asynchronous Completed\n");
+		//printf("Mem ERROR GPU %d = %s\n",i,cudaGetErrorString(cudaGetLastError()));
+		//printf("Memory asynchronous Completed\n");
 
 		//創建開始和停止事件(Event)
 		cudaEventCreate(&start_events[i]);
 		cudaEventCreate(&stop_events[i]);
-		printf("Create Start & Stop Event Completed\n");
+		//printf("Create Start & Stop Event Completed\n");
 
-		printf("Start Calculation\n");
+		//printf("Start Calculation\n");
 		cudaEventRecord(start_events[i],stream[i]);
 		//運用Kernel1進行運算
 		kernel1<<<blocksPerGrid, threadsPerBlock, 0,stream[i]>>>(a_device[i], r_device[i], N);
@@ -130,11 +131,11 @@ int main(int argc, char *argv[]) {
 		cudaEventRecord(stop_events[i],stream[i]);
 		cudaDeviceSynchronize();
 		cudaEventSynchronize(stop_events[i]);
-		printf("GPU %d ERROR = %s\n",i,cudaGetErrorString(cudaGetLastError()));
-		printf("GPU %d Calculation Completed\n",i);
+		printf("node_%d_GPU_%d ERROR = %s\n", world_rank, i, cudaGetErrorString(cudaGetLastError()));
+		//printf("GPU %d Calculation Completed\n",i);
 
 		//計算開始事件至暫停事件所經時間
-		printf("GPU %d Calculation time\n",i);
+		//printf("GPU %d Calculation time\n",i);
 		cudaEventElapsedTime(&elapsedTime[i], start_events[i], stop_events[i]);
 		total_time[i] = total_time[i] + (elapsedTime[i] / iters);
 		//cout << "total_time "<< i << "= " << total_time[i] << endl;
@@ -146,16 +147,15 @@ int main(int argc, char *argv[]) {
 			total_time[i] = total_time[i-1] + total_time[i];
 		}
 
-		cout << "Event Destroy" << endl;
+		//cout << "Event Destroy" << endl;
 		cudaEventDestroy(start_events[i]);
 		cudaEventDestroy(stop_events[i]);
 
 		//資料由顯卡記憶體傳輸至主機記憶體
-		cout << "Share Memory form Device to Host" << endl;
+		//cout << "Share Memory form Device to Host" << endl;
 		cudaMemcpy(r_host[i], r_device[i], blocksPerGrid * sizeof(double),
 								  cudaMemcpyDeviceToHost);
-
-		cout << "GPU "<< i <<" Elapse time for The Kernal 1 :"<< total_time[i] << " ms" << endl;
+		//printf("node_%d_GPU_%d Elapse time for The Kernal 1 : %f ms\n", world_rank, i, total_time[i]);
 		total_time[i] = 0.0 ;
 		elapsedTime[i] = 0.0 ;
 
@@ -166,10 +166,10 @@ int main(int argc, char *argv[]) {
 			else if (r_host[i][j] != 0){
 			r_host[0][0] = r_host[0][0] + r_host[i][j];
 			}
-			printf("r_host[%d][%d] = %f\n", i, j, r_host[i][j]);
-			printf("Ans [%d][%d] = %f\n", i, j, r_host[0][0]);
+			//printf("r_host[%d][%d] = %f\n", i, j, r_host[i][j]);
+			//printf("Ans [%d][%d] = %f\n", i, j, r_host[0][0]);
 		}
-		printf("r_host[0][0] = %f\n",r_host[0][0]);
+		//printf("r_host[0][0] = %f\n",r_host[0][0]);
 
 		//記憶體釋放
 		cudaFree(r_device[i]);
