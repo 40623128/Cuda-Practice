@@ -1,0 +1,17 @@
+#!/bin/bash
+#SBATCH --ntasks=2
+#SBATCH --nodes=2
+#SBATCH -p gtest
+#SBATCH -t 00:0:30
+#SBATCH --gres=gpu:8
+#SBATCH --cpus-per-task=1
+#SBATCH --account=MST109279
+#SBATCH --output=out4d.txt
+#SBATCH --error=error_log.txt
+#SBATCH -o node_02_GPU_08.%j.out
+module load cuda/11.3
+module load openmpi4/4.1.1
+mpicc -c main.c -o main.o -std=c99
+nvcc -c multiply.cu -o multiply.o
+mpic++ main.o multiply.o -lcudart
+mpirun -n 2 a.out
